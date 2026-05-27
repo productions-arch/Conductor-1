@@ -16,6 +16,7 @@ import {
   MessageCircle,
   Key,
   Menu,
+  ChevronsUpDown,
 } from "lucide-react";
 import { Logo } from "./Logo";
 import { EXAMPLE_CONVERSATIONS, SAVED_WORKFLOWS } from "@/lib/mock-data";
@@ -47,6 +48,7 @@ interface AppShellProps {
 export function AppShell({ children, mode, onModeChange, rightRail, dockReservedHeight = 0 }: AppShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  const [headerCollapsed, setHeaderCollapsed] = useState(false);
   const { theme, toggle } = useTheme();
   const [, setLocation] = useLocation();
   const auth = useAuth();
@@ -217,9 +219,9 @@ export function AppShell({ children, mode, onModeChange, rightRail, dockReserved
       </aside>
 
       {/* MAIN */}
-      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
         {/* TOP BAR */}
-        <header className="h-12 border-b border-border flex items-center px-3 gap-2 shrink-0 min-w-0">
+        <header className={`border-b border-border flex items-center px-3 gap-2 shrink-0 min-w-0 transition-all duration-200 overflow-hidden ${headerCollapsed ? "h-0 border-b-0" : "h-12"}`}>
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="p-1.5 rounded-md hover-elevate text-muted-foreground"
@@ -285,8 +287,28 @@ export function AppShell({ children, mode, onModeChange, rightRail, dockReserved
           >
             Pricing
           </button>
+          <button
+            onClick={() => setHeaderCollapsed(true)}
+            className="hidden sm:inline-flex p-1.5 rounded-md hover-elevate text-muted-foreground/50 hover:text-muted-foreground"
+            aria-label="Collapse toolbar"
+            title="Collapse toolbar"
+          >
+            <ChevronsUpDown className="w-3.5 h-3.5" />
+          </button>
         </header>
         <FeedbackModal open={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
+
+        {/* Floating pill — shown when header is collapsed */}
+        {headerCollapsed && !isMobile && (
+          <div className="absolute top-2 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1 bg-card/90 backdrop-blur border border-border rounded-full px-1.5 py-1 shadow-md">
+            <button onClick={() => onModeChange("chat")} className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${mode === "chat" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}><MessageSquare className="w-3 h-3" />Chat</button>
+            <button onClick={() => onModeChange("compare")} className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${mode === "compare" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}><Layers className="w-3 h-3" />Compare</button>
+            <button onClick={() => onModeChange("orchestrate")} className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${mode === "orchestrate" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}><GitBranch className="w-3 h-3" />Orchestrate</button>
+            <button onClick={() => onModeChange("workspace")} className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${mode === "workspace" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}><LayoutGrid className="w-3 h-3" />Workspace</button>
+            <div className="w-px h-4 bg-border mx-0.5" />
+            <button onClick={() => setHeaderCollapsed(false)} className="p-1.5 rounded-full text-muted-foreground hover:text-foreground hover-elevate" title="Expand toolbar"><ChevronsUpDown className="w-3.5 h-3.5" /></button>
+          </div>
+        )}
 
         {/* CONTENT + RIGHT RAIL */}
         <div className="flex-1 flex min-h-0">
