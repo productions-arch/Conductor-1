@@ -46,9 +46,16 @@ interface AppShellProps {
 }
 
 export function AppShell({ children, mode, onModeChange, rightRail, dockReservedHeight = 0 }: AppShellProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarState, setSidebarState] = useState<"open" | "icons" | "closed">("open");
   const [isMobile, setIsMobile] = useState(false);
   const [headerCollapsed, setHeaderCollapsed] = useState(false);
+
+  const sidebarOpen = sidebarState !== "closed";
+  const setSidebarOpen = (open: boolean) => setSidebarState(open ? "open" : "closed");
+
+  function cycleSidebar() {
+    setSidebarState((s) => s === "open" ? "icons" : s === "icons" ? "closed" : "open");
+  }
   const { theme, toggle } = useTheme();
   const [, setLocation] = useLocation();
   const auth = useAuth();
@@ -88,98 +95,118 @@ export function AppShell({ children, mode, onModeChange, rightRail, dockReserved
       {/* LEFT SIDEBAR */}
       <aside
         className={`${
-          sidebarOpen ? "w-64" : "w-0"
+          sidebarState === "open" ? "w-64" : sidebarState === "icons" ? "w-14" : "w-0"
         } ${isMobile ? "fixed left-0 top-0 bottom-0 z-40" : "shrink-0"} border-r border-border bg-sidebar overflow-hidden transition-[width] duration-200 flex flex-col`}
       >
-        <div className="px-4 py-4 border-b border-border flex items-center justify-between">
-          <Link href="/" data-testid="link-home" className="inline-flex items-center gap-2 hover-elevate rounded-md px-1.5 py-1 -ml-1.5">
+        {/* Header */}
+        <div className="px-3 py-4 border-b border-border flex items-center justify-between shrink-0">
+          <Link href="/" data-testid="link-home" className="inline-flex items-center gap-2 hover-elevate rounded-md px-1 py-1">
             <Logo size={20} />
-            <span className="font-semibold tracking-tight text-sm">Conductor</span>
+            {sidebarState === "open" && <span className="font-semibold tracking-tight text-sm">Conductor</span>}
           </Link>
-          <button
-            onClick={toggle}
-            className="p-1.5 rounded-md hover-elevate text-muted-foreground"
-            aria-label="Toggle theme"
-            data-testid="button-theme-toggle"
-          >
-            {theme === "dark" ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
-          </button>
+          {sidebarState === "open" && (
+            <button onClick={toggle} className="p-1.5 rounded-md hover-elevate text-muted-foreground" aria-label="Toggle theme" data-testid="button-theme-toggle">
+              {theme === "dark" ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+            </button>
+          )}
         </div>
 
-        <div className="px-3 py-3">
+        {/* New thread button */}
+        <div className="px-2 py-3 shrink-0">
           <button
             onClick={() => onModeChange("chat")}
-            className="w-full inline-flex items-center justify-center gap-2 rounded-md bg-primary text-primary-foreground px-3 py-2 text-sm font-medium hover-elevate-2"
+            className={`w-full inline-flex items-center justify-center gap-2 rounded-md bg-primary text-primary-foreground px-3 py-2 text-sm font-medium hover-elevate-2`}
             data-testid="button-new-chat"
+            title="New thread"
           >
-            <Plus className="w-4 h-4" />
-            New thread
+            <Plus className="w-4 h-4 shrink-0" />
+            {sidebarState === "open" && "New thread"}
           </button>
         </div>
 
-        <div className="px-3 pb-2">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-            <input
-              type="search"
-              placeholder="Search"
-              className="w-full bg-muted/50 border border-border rounded-md pl-8 pr-2 py-1.5 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-              data-testid="input-sidebar-search"
-            />
+        {/* Search — only when open */}
+        {sidebarState === "open" && (
+          <div className="px-3 pb-2 shrink-0">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+              <input
+                type="search"
+                placeholder="Search"
+                className="w-full bg-muted/50 border border-border rounded-md pl-8 pr-2 py-1.5 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                data-testid="input-sidebar-search"
+              />
+            </div>
           </div>
-        </div>
+        )}
 
+        {/* Nav */}
         <nav className="flex-1 overflow-y-auto px-2 py-2 nice-scroll">
-          <SidebarSection label="Workspace">
-            <SidebarItem icon={<Folder className="w-3.5 h-3.5" />} label="Personal" active />
-            <SidebarItem icon={<Folder className="w-3.5 h-3.5" />} label="Acquisitions" />
-            <SidebarItem icon={<Folder className="w-3.5 h-3.5" />} label="Editorial" />
-          </SidebarSection>
+          {sidebarState === "open" ? (
+            <>
+              <SidebarSection label="Workspace">
+                <SidebarItem icon={<Folder className="w-3.5 h-3.5" />} label="Personal" active />
+                <SidebarItem icon={<Folder className="w-3.5 h-3.5" />} label="Acquisitions" />
+                <SidebarItem icon={<Folder className="w-3.5 h-3.5" />} label="Editorial" />
+              </SidebarSection>
 
-          <SidebarSection label="Recent threads">
-            {EXAMPLE_CONVERSATIONS.map((c) => (
-              <button
-                key={c.id}
-                className="w-full text-left rounded-md px-2 py-1.5 hover-elevate group"
-                data-testid={`item-conversation-${c.id}`}
-              >
-                <div className="text-xs text-foreground/90 truncate">{c.title}</div>
-                <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground/70 mt-0.5">
-                  {c.updatedLabel}
-                </div>
-              </button>
-            ))}
-          </SidebarSection>
+              <SidebarSection label="Recent threads">
+                {EXAMPLE_CONVERSATIONS.map((c) => (
+                  <button key={c.id} className="w-full text-left rounded-md px-2 py-1.5 hover-elevate group" data-testid={`item-conversation-${c.id}`}>
+                    <div className="text-xs text-foreground/90 truncate">{c.title}</div>
+                    <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground/70 mt-0.5">{c.updatedLabel}</div>
+                  </button>
+                ))}
+              </SidebarSection>
 
-          <SidebarSection label="Saved workflows">
-            {SAVED_WORKFLOWS.map((w) => (
-              <button
-                key={w.id}
-                onClick={() => onModeChange("orchestrate")}
-                className="w-full text-left rounded-md px-2 py-1.5 hover-elevate flex items-start gap-2"
-                data-testid={`item-workflow-${w.id}`}
-              >
-                <GitBranch className="w-3 h-3 mt-0.5 text-muted-foreground shrink-0" />
-                <div className="min-w-0">
-                  <div className="text-xs text-foreground/90 truncate">{w.name}</div>
-                  <div className="text-[10px] text-muted-foreground truncate">{w.description}</div>
-                </div>
-              </button>
-            ))}
-          </SidebarSection>
+              <SidebarSection label="Saved workflows">
+                {SAVED_WORKFLOWS.map((w) => (
+                  <button key={w.id} onClick={() => onModeChange("orchestrate")} className="w-full text-left rounded-md px-2 py-1.5 hover-elevate flex items-start gap-2" data-testid={`item-workflow-${w.id}`}>
+                    <GitBranch className="w-3 h-3 mt-0.5 text-muted-foreground shrink-0" />
+                    <div className="min-w-0">
+                      <div className="text-xs text-foreground/90 truncate">{w.name}</div>
+                      <div className="text-[10px] text-muted-foreground truncate">{w.description}</div>
+                    </div>
+                  </button>
+                ))}
+              </SidebarSection>
+            </>
+          ) : (
+            /* Icon rail — just mode shortcuts */
+            <div className="flex flex-col items-center gap-1 pt-1">
+              {[
+                { icon: <MessageSquare className="w-4 h-4" />, m: "chat" as const, label: "Chat" },
+                { icon: <Layers className="w-4 h-4" />, m: "compare" as const, label: "Compare" },
+                { icon: <GitBranch className="w-4 h-4" />, m: "orchestrate" as const, label: "Orchestrate" },
+                { icon: <LayoutGrid className="w-4 h-4" />, m: "workspace" as const, label: "Workspace" },
+              ].map(({ icon, m, label }) => (
+                <button
+                  key={m}
+                  onClick={() => onModeChange(m)}
+                  title={label}
+                  className={`w-9 h-9 flex items-center justify-center rounded-md hover-elevate transition-colors ${mode === m ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  {icon}
+                </button>
+              ))}
+            </div>
+          )}
         </nav>
 
         <div className="border-t border-border p-3">
           {auth.user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="w-full flex items-center gap-2.5 px-2 py-1.5 rounded-md hover-elevate" data-testid="button-account">
+                <button className="w-full flex items-center gap-2.5 px-2 py-1.5 rounded-md hover-elevate" data-testid="button-account" title={auth.user.name || auth.user.email}>
                   <Avatar email={auth.user.email} image={auth.user.image} name={auth.user.name} />
-                  <div className="flex-1 text-left min-w-0">
-                    <div className="text-xs font-medium truncate">{auth.user.name || auth.user.email.split("@")[0]}</div>
-                    <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">{auth.hasKey ? "BYOK" : "No key"}</div>
-                  </div>
-                  <Settings className="w-3.5 h-3.5 text-muted-foreground" />
+                  {sidebarState === "open" && (
+                    <>
+                      <div className="flex-1 text-left min-w-0">
+                        <div className="text-xs font-medium truncate">{auth.user.name || auth.user.email.split("@")[0]}</div>
+                        <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">{auth.hasKey ? "BYOK" : "No key"}</div>
+                      </div>
+                      <Settings className="w-3.5 h-3.5 text-muted-foreground" />
+                    </>
+                  )}
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-56">
@@ -205,14 +232,17 @@ export function AppShell({ children, mode, onModeChange, rightRail, dockReserved
               onClick={() => auth.openSignIn()}
               className="w-full flex items-center gap-2.5 px-2 py-1.5 rounded-md hover-elevate"
               data-testid="button-signin-sidebar"
+              title="Sign in"
             >
-              <div className="w-6 h-6 rounded-full border border-border bg-muted flex items-center justify-center text-[10px] font-semibold text-muted-foreground">
+              <div className="w-6 h-6 rounded-full border border-border bg-muted flex items-center justify-center text-[10px] font-semibold text-muted-foreground shrink-0">
                 G
               </div>
-              <div className="flex-1 text-left min-w-0">
-                <div className="text-xs font-medium truncate">Sign in</div>
-                <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Demo mode</div>
-              </div>
+              {sidebarState === "open" && (
+                <div className="flex-1 text-left min-w-0">
+                  <div className="text-xs font-medium truncate">Sign in</div>
+                  <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Demo mode</div>
+                </div>
+              )}
             </button>
           )}
         </div>
@@ -223,7 +253,7 @@ export function AppShell({ children, mode, onModeChange, rightRail, dockReserved
         {/* TOP BAR */}
         <header className={`border-b border-border flex items-center px-3 gap-2 shrink-0 min-w-0 transition-all duration-200 overflow-hidden ${headerCollapsed ? "h-0 border-b-0" : "h-12"}`}>
           <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
+            onClick={cycleSidebar}
             className="p-1.5 rounded-md hover-elevate text-muted-foreground"
             aria-label="Toggle sidebar"
             data-testid="button-sidebar-toggle"
