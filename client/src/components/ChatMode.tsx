@@ -10,6 +10,8 @@ import {
   ChevronRight,
   Plus,
   MoreHorizontal,
+  Share2,
+  Check,
 } from "lucide-react";
 import { ModelPicker } from "./ModelPicker";
 import { ModelBadge } from "./ModelBadge";
@@ -48,7 +50,39 @@ export function ChatMode() {
   const store = useRunsStore();
   const [input, setInput] = useState("");
   const [modelId, setModelId] = useState("claude-opus-4");
+  const [sharing, setSharing] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  async function handleShare() {
+    if (sharing || !messages.length) return;
+    setSharing(true);
+    try {
+      const snapshot = messages.map((m) => ({
+        role: m.role,
+        content: m.content,
+        modelId: m.modelId,
+      }));
+      const r = await fetch("/api/share", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: activeThread?.title ?? "Shared conversation",
+          mode: "chat",
+          snapshot,
+        }),
+      });
+      if (!r.ok) return;
+      const { token } = await r.json();
+      const url = `${window.location.origin}${window.location.pathname}#/share/${token}`;
+      await navigator.clipboard.writeText(url).catch(() => {});
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2500);
+    } finally {
+      setSharing(false);
+    }
+  }
 
   // Register a surface handler so the runs-store can commit chunks back into the thread.
   // `req.onMeta.messageId` carries the assistant placeholder id.
@@ -205,13 +239,25 @@ export function ChatMode() {
           </div>
         </div>
         <div className="flex-1" />
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
           {[...new Set(messages.filter((m) => m.modelId).map((m) => m.modelId!))].slice(0, 4).map((mid) => {
             const m = modelById(mid);
             return (
               <span key={mid} className={`${providerClass(m.provider)} w-1.5 h-1.5 rounded-full provider-dot`} title={m.name} />
             );
           })}
+          {messages.length > 0 && (
+            <button
+              onClick={handleShare}
+              disabled={sharing}
+              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground border border-border rounded-md px-2 py-1 hover-elevate"
+              title="Copy share link"
+              data-testid="button-share-chat"
+            >
+              {shareCopied ? <Check className="w-3 h-3 text-emerald-500" /> : <Share2 className="w-3 h-3" />}
+              {shareCopied ? "Copied!" : "Share"}
+            </button>
+          )}
         </div>
       </div>
 

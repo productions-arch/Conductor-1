@@ -17,6 +17,7 @@ import SettingsKeysPage from "@/pages/settings-keys";
 import SettingsUsagePage from "@/pages/settings-usage";
 import PrivacyPage from "@/pages/legal-privacy";
 import TermsPage from "@/pages/legal-terms";
+import ShareViewPage from "@/pages/share-view";
 
 function AppRouter() {
   return (
@@ -29,6 +30,7 @@ function AppRouter() {
       <Route path="/settings/usage" component={SettingsUsagePage} />
       <Route path="/legal/privacy" component={PrivacyPage} />
       <Route path="/legal/terms" component={TermsPage} />
+      <Route path="/share/:token" component={ShareViewPage} />
       <Route component={NotFound} />
     </Switch>
   );

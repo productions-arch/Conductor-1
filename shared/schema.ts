@@ -173,6 +173,30 @@ export const usageEvents = pgTable(
 );
 export type UsageEvent = typeof usageEvents.$inferSelect;
 
+// ───── share_links ────────────────────────────────────────────────────
+// Stores a conversation snapshot so shares work even though messages are
+// held in client-side state (not persisted per-message to the DB).
+export const shareLinks = pgTable(
+  "share_links",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    token: text("token").notNull().unique(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    title: text("title").notNull().default("Shared conversation"),
+    mode: text("mode").notNull().default("chat"), // "chat" | "compare" | "orchestrate"
+    snapshotJson: jsonb("snapshot_json").notNull(), // serialized messages / nodes
+    expiresAt: timestamp("expires_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    tokenIdx: index("share_links_token_idx").on(t.token),
+    userIdx: index("share_links_user_idx").on(t.userId),
+  }),
+);
+export type ShareLink = typeof shareLinks.$inferSelect;
+
 // ───── feedback ───────────────────────────────────────────────────────
 export const feedback = pgTable(
   "feedback",

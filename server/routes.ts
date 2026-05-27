@@ -1,9 +1,13 @@
 import type { Express, Request, Response } from "express";
 import type { Server } from "node:http";
+import { randomBytes } from "node:crypto";
+import { eq } from "drizzle-orm";
 
 import { clearSessionCookie, readSessionFromReq, APPLE_ENABLED, GOOGLE_ENABLED } from "./auth";
 import { googleSignIn, googleCallback } from "./oauth-google";
 import { appleSignIn, appleCallback } from "./oauth-apple";
+import { db } from "./db";
+import { shareLinks } from "../shared/schema";
 import {
   getKeyStatus,
   setKey,
@@ -15,6 +19,44 @@ import {
   postFeedback,
   streamChat,
 } from "./openrouter";
+
+async function createShare(req: Request, res: Response) {
+  const session = readSessionFromReq(req);
+  if (!session) return res.status(401).json({ error: "unauthorized" });
+  if (!db) return res.status(503).json({ error: "db_unavailable" });
+  const { title, mode, snapshot } = (req.body ?? {}) as {
+    title?: string;
+    mode?: string;
+    snapshot?: unknown;
+  };
+  if (!snapshot || !mode) return res.status(400).json({ error: "missing_fields" });
+  const token = randomBytes(18).toString("base64url");
+  await db.insert(shareLinks).values({
+    token,
+    userId: session.uid,
+    title: (typeof title === "string" && title.trim()) ? title.trim() : "Shared conversation",
+    mode: mode as string,
+    snapshotJson: snapshot as any,
+  });
+  return res.json({ token });
+}
+
+async function getShare(req: Request, res: Response) {
+  if (!db) return res.status(503).json({ error: "db_unavailable" });
+  const { token } = req.params as { token: string };
+  const rows = await db.select().from(shareLinks).where(eq(shareLinks.token, token)).limit(1);
+  if (!rows.length) return res.status(404).json({ error: "not_found" });
+  const link = rows[0];
+  if (link.expiresAt && link.expiresAt < new Date()) {
+    return res.status(410).json({ error: "expired" });
+  }
+  return res.json({
+    title: link.title,
+    mode: link.mode,
+    snapshot: link.snapshotJson,
+    createdAt: link.createdAt,
+  });
+}
 
 export async function registerRoutes(
   httpServer: Server,
@@ -79,6 +121,10 @@ export async function registerRoutes(
 
   // ── OpenRouter streaming proxy ───────────────────────────────────
   app.post("/api/chat/stream", streamChat);
+
+  // ── Sharing ───────────────────────────────────────────────────────
+  app.post("/api/share", createShare);
+  app.get("/api/share/:token", getShare);
 
   return httpServer;
 }

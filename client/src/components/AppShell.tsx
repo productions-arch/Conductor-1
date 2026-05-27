@@ -15,6 +15,7 @@ import {
   LogOut,
   MessageCircle,
   Key,
+  Menu,
 } from "lucide-react";
 import { Logo } from "./Logo";
 import { EXAMPLE_CONVERSATIONS, SAVED_WORKFLOWS } from "@/lib/mock-data";
@@ -73,7 +74,7 @@ export function AppShell({ children, mode, onModeChange, rightRail, dockReserved
   return (
     <div
       className="h-screen w-full flex bg-background text-foreground overflow-hidden"
-      style={{ paddingBottom: dockReservedHeight }}
+      style={{ paddingBottom: isMobile ? 56 : dockReservedHeight }}
     >
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && isMobile && (
@@ -228,23 +229,28 @@ export function AppShell({ children, mode, onModeChange, rightRail, dockReserved
             <Layers className="w-4 h-4" />
           </button>
 
-          <div className="flex items-center bg-card/80 border border-border rounded-md p-0.5 gap-0.5 min-w-0 overflow-x-auto no-scrollbar">
+          {/* Mode tabs — hidden on mobile (replaced by bottom nav) */}
+          <div className="hidden sm:flex items-center bg-card/80 border border-border rounded-md p-0.5 gap-0.5 min-w-0 overflow-x-auto no-scrollbar">
             <ModeTab active={mode === "chat"} onClick={() => onModeChange("chat")} icon={<MessageSquare className="w-3 h-3" />} label="Chat" testId="tab-chat" />
             <ModeTab active={mode === "compare"} onClick={() => onModeChange("compare")} icon={<Layers className="w-3 h-3" />} label="Compare" testId="tab-compare" />
             <ModeTab active={mode === "orchestrate"} onClick={() => onModeChange("orchestrate")} icon={<GitBranch className="w-3 h-3" />} label="Orchestrate" testId="tab-orchestrate" />
             <ModeTab active={mode === "workspace"} onClick={() => onModeChange("workspace")} icon={<LayoutGrid className="w-3 h-3" />} label="Workspace" testId="tab-workspace" />
           </div>
+          {/* Mobile: show current mode label */}
+          {isMobile && (
+            <span className="text-sm font-medium capitalize">{mode}</span>
+          )}
 
           <div className="flex-1" />
 
           {mode_ === "mock" && (
             <span
-              className="hidden sm:inline-flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-amber-500 border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 rounded-md"
+              className="inline-flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-amber-500 border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 rounded-md"
               data-testid="badge-demo-mode"
               title="Responses are mocked. Sign in and add an OpenRouter key to use real models."
             >
               <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-              Demo mode
+              <span className="hidden sm:inline">Demo mode</span>
             </span>
           )}
           {auth.user && (
@@ -292,6 +298,17 @@ export function AppShell({ children, mode, onModeChange, rightRail, dockReserved
           )}
         </div>
       </main>
+
+      {/* MOBILE BOTTOM NAV */}
+      {isMobile && (
+        <nav className="fixed bottom-0 left-0 right-0 z-50 h-14 bg-background border-t border-border flex items-stretch">
+          <BottomNavItem icon={<MessageSquare className="w-5 h-5" />} label="Chat" active={mode === "chat"} onClick={() => onModeChange("chat")} testId="mobile-tab-chat" />
+          <BottomNavItem icon={<Layers className="w-5 h-5" />} label="Compare" active={mode === "compare"} onClick={() => onModeChange("compare")} testId="mobile-tab-compare" />
+          <BottomNavItem icon={<GitBranch className="w-5 h-5" />} label="Orchestrate" active={mode === "orchestrate"} onClick={() => onModeChange("orchestrate")} testId="mobile-tab-orchestrate" />
+          <BottomNavItem icon={<LayoutGrid className="w-5 h-5" />} label="Workspace" active={mode === "workspace"} onClick={() => onModeChange("workspace")} testId="mobile-tab-workspace" />
+          <BottomNavItem icon={<Menu className="w-5 h-5" />} label="Menu" active={sidebarOpen} onClick={() => setSidebarOpen(!sidebarOpen)} testId="mobile-tab-menu" />
+        </nav>
+      )}
     </div>
   );
 }
@@ -352,6 +369,21 @@ function SidebarItem({ icon, label, active = false }: { icon: ReactNode; label: 
     >
       {icon}
       {label}
+    </button>
+  );
+}
+
+function BottomNavItem({ icon, label, active, onClick, testId }: { icon: ReactNode; label: string; active: boolean; onClick: () => void; testId: string }) {
+  return (
+    <button
+      onClick={onClick}
+      data-testid={testId}
+      className={`flex-1 flex flex-col items-center justify-center gap-0.5 text-[10px] font-medium transition-colors ${
+        active ? "text-primary" : "text-muted-foreground"
+      }`}
+    >
+      {icon}
+      <span>{label}</span>
     </button>
   );
 }

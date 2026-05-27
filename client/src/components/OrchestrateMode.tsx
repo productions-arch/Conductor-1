@@ -10,6 +10,7 @@ import {
   X,
   RotateCcw,
   ChevronDown,
+  GripVertical,
 } from "lucide-react";
 import { ModelPicker } from "./ModelPicker";
 import { modelById, providerClass, MODELS } from "@/lib/models";
@@ -209,6 +210,7 @@ export function OrchestrateMode() {
   const [nodes, setNodes] = useState<WorkflowNode[]>(() => TEMPLATES[0].build(""));
   const [running, setRunning] = useState(false);
   const [hasRun, setHasRun] = useState(false);
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
   const runsStore = useRunsStore();
   const runsState = useRunsState();
 
@@ -389,6 +391,16 @@ export function OrchestrateMode() {
     setHasRun(false);
   };
 
+  const moveNode = (fromIdx: number, toIdx: number) => {
+    if (fromIdx === toIdx) return;
+    setNodes((ns) => {
+      const next = [...ns];
+      const [moved] = next.splice(fromIdx, 1);
+      next.splice(toIdx, 0, moved);
+      return next;
+    });
+  };
+
   const finalNode = nodes[nodes.length - 1];
 
   return (
@@ -447,13 +459,21 @@ export function OrchestrateMode() {
           {/* Workflow nodes */}
           <div className="flex flex-col items-center gap-2">
             {nodes.map((node, idx) => (
-              <div key={node.id} className="w-full max-w-2xl flex flex-col items-center gap-2">
+              <div
+                key={node.id}
+                className={`w-full max-w-2xl flex flex-col items-center gap-2 transition-opacity ${dragIdx === idx ? "opacity-40" : "opacity-100"}`}
+                draggable={!running}
+                onDragStart={() => setDragIdx(idx)}
+                onDragEnd={() => setDragIdx(null)}
+                onDragOver={(e) => { e.preventDefault(); if (dragIdx !== null && dragIdx !== idx) moveNode(dragIdx, idx); setDragIdx(idx); }}
+              >
                 <WorkflowNodeCard
                   node={node}
                   index={idx + 1}
                   onModelChange={(id) => setNodeModel(node.id, id)}
                   onRemove={() => removeNode(node.id)}
                   canRemove={nodes.length > 1 && !running}
+                  canDrag={!running}
                   onCancel={() => cancelNode(node.id)}
                   onRetry={(newModelId) => retryNode(node.id, newModelId)}
                   canRetry={hasRun && !running && (node.status === "done" || node.status === "stopped")}
@@ -531,6 +551,7 @@ function WorkflowNodeCard({
   onModelChange,
   onRemove,
   canRemove,
+  canDrag,
   onCancel,
   onRetry,
   canRetry,
@@ -540,6 +561,7 @@ function WorkflowNodeCard({
   onModelChange: (id: string) => void;
   onRemove: () => void;
   canRemove: boolean;
+  canDrag: boolean;
   onCancel: () => void;
   onRetry: (newModelId?: string) => void;
   canRetry: boolean;
@@ -560,6 +582,9 @@ function WorkflowNodeCard({
       }`}
     >
       <div className="px-4 py-2.5 flex items-center gap-3 border-b border-border/70">
+        {canDrag && (
+          <GripVertical className="w-3.5 h-3.5 text-muted-foreground/40 cursor-grab active:cursor-grabbing shrink-0 -ml-1" />
+        )}
         <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground w-8">
           {String(index).padStart(2, "0")}
         </div>

@@ -156,26 +156,52 @@ export default function SettingsKeysPage() {
         </div>
 
         <div className="mt-6 rounded-lg border border-border bg-muted/30 p-4">
-          <div className="flex items-start gap-2">
-            <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mt-0.5">How to</div>
+          <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-3">How to get your key</div>
+          <div className="space-y-3">
+            {[
+              {
+                n: "1",
+                text: (
+                  <>
+                    Go to{" "}
+                    <a href="https://openrouter.ai/keys" target="_blank" rel="noreferrer noopener" className="inline-flex items-center gap-0.5 underline hover:text-foreground">
+                      openrouter.ai/keys <ExternalLink className="w-3 h-3" />
+                    </a>{" "}
+                    and create a free account.
+                  </>
+                ),
+              },
+              {
+                n: "2",
+                text: "Add a small credit balance — $5 covers hundreds of queries across every model.",
+              },
+              {
+                n: "3",
+                text: "Create a new API key, copy it, paste it above, and click Test.",
+              },
+              {
+                n: "4",
+                text: "That's it. One key unlocks GPT, Claude, Gemini, DeepSeek, Grok, Llama, and more.",
+              },
+            ].map(({ n, text }) => (
+              <div key={n} className="flex gap-3 text-xs text-foreground/85 leading-relaxed">
+                <span className="shrink-0 w-5 h-5 rounded-full bg-primary/15 text-primary text-[10px] font-semibold flex items-center justify-center mt-0.5">
+                  {n}
+                </span>
+                <span>{text}</span>
+              </div>
+            ))}
           </div>
-          <ol className="mt-2 space-y-1.5 text-xs text-foreground/85 leading-relaxed list-decimal pl-4">
-            <li>
-              Open{" "}
-              <a href="https://openrouter.ai/keys" target="_blank" rel="noreferrer noopener" className="inline-flex items-center gap-0.5 underline hover:text-foreground">
-                openrouter.ai/keys <ExternalLink className="w-3 h-3" />
-              </a>{" "}and create a new key.
-            </li>
-            <li>Add a small amount of credit (a few dollars goes a long way for testing).</li>
-            <li>Paste the key above and click Test.</li>
-            <li>One OpenRouter key unlocks every model in Conductor.</li>
-          </ol>
         </div>
 
-        <div className="mt-6 text-[11px] text-muted-foreground leading-relaxed">
-          <span className="font-medium">What we do with your key:</span> encrypt it with AES-256-GCM in our Neon Postgres,
-          decrypt only at request time, send it as the Bearer token to OpenRouter, and never log it.
-          See the <Link href="/legal/privacy" className="underline hover:text-foreground">privacy policy</Link> for the full story.
+        <div className="mt-4 rounded-lg border border-border bg-muted/20 px-4 py-3 flex items-start gap-3">
+          <Key className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
+          <p className="text-[11px] text-muted-foreground leading-relaxed">
+            <span className="font-medium text-foreground/70">Your key stays private.</span>{" "}
+            We encrypt it with AES-256-GCM, decrypt only at request time, and never log it.
+            It goes directly from our server to OpenRouter — never to the browser.{" "}
+            <Link href="/legal/privacy" className="underline hover:text-foreground">Privacy policy →</Link>
+          </p>
         </div>
       </div>
     </div>

@@ -1,31 +1,34 @@
-/**
- * Hand-rolled four-step onboarding overlay. No external library.
- *
- * Triggers on first authenticated visit (stored in React state at the AuthProvider
- * level — we use a one-time React ref since the sandboxed iframe blocks
- * localStorage. In a real Vercel deploy this would persist via DB, but a
- * one-session tour is fine for the beta — the BETA_LAUNCH doc explains it.)
- *
- * Spotlight strategy: a dark overlay with a "hole" cut around the target via
- * `clip-path: polygon(...)` is fragile across resizes. Instead we render a
- * fixed-position highlight ring around the target's bounding rect plus a
- * tooltip below it. Tab + arrow keys + click-outside all advance.
- */
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, X } from "lucide-react";
+import { ArrowRight, X, Key } from "lucide-react";
+import { useLocation } from "wouter";
+
+const TOUR_STORAGE_KEY = "conductor-tour-v1";
+
+export function useTourSeen() {
+  const [seen, setSeen] = useState(() => {
+    try { return localStorage.getItem(TOUR_STORAGE_KEY) === "done"; } catch { return false; }
+  });
+  const markSeen = () => {
+    try { localStorage.setItem(TOUR_STORAGE_KEY, "done"); } catch {}
+    setSeen(true);
+  };
+  return { seen, markSeen };
+}
 
 interface Step {
   selector: string;
   title: string;
   body: string;
   ctaLabel?: string;
+  action?: "go-to-keys";
 }
 
 const STEPS: Step[] = [
   { selector: "[data-tour='model-picker']", title: "Pick any model", body: "Send each turn to a different model. They all share the conversation context." },
   { selector: "[data-testid='tab-compare']", title: "Compare them side by side", body: "Send one prompt to 2–4 models in parallel. Watch them stream, then synthesize." },
   { selector: "[data-testid='tab-orchestrate']", title: "Build workflows", body: "Chain models into multi-step pipelines. Each node sees the previous output." },
-  { selector: "[data-testid='tab-workspace']", title: "Build your own workspace", body: "Tile chat panes, group them into channels, and broadcast prompts.", ctaLabel: "Got it" },
+  { selector: "[data-testid='tab-workspace']", title: "Build your own workspace", body: "Tile chat panes, group them into channels, and broadcast prompts." },
+  { selector: "[data-testid='button-signin-nav'], [data-testid='chip-spend']", title: "Unlock real models", body: "Sign in and add your free OpenRouter key — one key gives you GPT, Claude, Gemini, DeepSeek, and more. A few dollars of credit covers hundreds of queries.", ctaLabel: "Add my key", action: "go-to-keys" },
 ];
 
 export function OnboardingTour({
@@ -37,6 +40,7 @@ export function OnboardingTour({
 }) {
   const [stepIdx, setStepIdx] = useState(0);
   const [rect, setRect] = useState<DOMRect | null>(null);
+  const [, setLocation] = useLocation();
 
   const step = STEPS[stepIdx];
 
@@ -76,14 +80,19 @@ export function OnboardingTour({
   }, [open, stepIdx]);
 
   function next() {
-    if (stepIdx < STEPS.length - 1) setStepIdx(stepIdx + 1);
-    else onClose();
+    if (stepIdx < STEPS.length - 1) {
+      setStepIdx(stepIdx + 1);
+    } else {
+      onClose();
+      if (step.action === "go-to-keys") setLocation("/settings/keys");
+    }
   }
 
   const tooltipPos = useMemo(() => {
-    if (!rect) return { left: 24, top: 80 };
-    const top = rect.bottom + 12;
-    const left = Math.max(16, Math.min(rect.left, window.innerWidth - 360 - 16));
+    const w = window.innerWidth;
+    if (!rect) return { left: Math.max(16, (w - 340) / 2), top: 80 };
+    const top = Math.min(rect.bottom + 12, window.innerHeight - 220);
+    const left = Math.max(16, Math.min(rect.left, w - 360 - 16));
     return { left, top };
   }, [rect]);
 
@@ -122,7 +131,10 @@ export function OnboardingTour({
             <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-1">
               {stepIdx + 1} / {STEPS.length}
             </div>
-            <div className="text-sm font-semibold tracking-tight">{step.title}</div>
+            <div className="flex items-center gap-1.5">
+              {step.action === "go-to-keys" && <Key className="w-3.5 h-3.5 text-primary" />}
+              <div className="text-sm font-semibold tracking-tight">{step.title}</div>
+            </div>
           </div>
           <button
             onClick={onClose}
