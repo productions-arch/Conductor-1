@@ -1,0 +1,262 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* DARK MODE — DEFAULT (applied via :root and .dark) */
+:root, .dark {
+  --button-outline: rgba(255, 255, 255, 0.08);
+  --badge-outline: rgba(255, 255, 255, 0.06);
+  --opaque-button-border-intensity: 9;
+  --elevate-1: rgba(255, 255, 255, 0.04);
+  --elevate-2: rgba(255, 255, 255, 0.08);
+
+  /* Surfaces — near-black with subtle warmth */
+  --background: 240 6% 6%;
+  --foreground: 0 0% 96%;
+  --border: 240 4% 14%;
+  --card: 240 6% 8%;
+  --card-foreground: 0 0% 96%;
+  --card-border: 240 4% 13%;
+  --sidebar: 240 6% 5%;
+  --sidebar-foreground: 0 0% 88%;
+  --sidebar-border: 240 4% 12%;
+  --sidebar-primary: 158 64% 52%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 240 5% 13%;
+  --sidebar-accent-foreground: 0 0% 96%;
+  --sidebar-ring: 158 64% 52%;
+  --popover: 240 6% 9%;
+  --popover-foreground: 0 0% 96%;
+  --popover-border: 240 4% 15%;
+
+  /* Conductor primary: cool electric green-cyan (neutral, not branded) */
+  --primary: 158 64% 52%;
+  --primary-foreground: 240 6% 6%;
+  --secondary: 240 5% 14%;
+  --secondary-foreground: 0 0% 96%;
+  --muted: 240 5% 12%;
+  --muted-foreground: 240 4% 56%;
+  --accent: 240 5% 15%;
+  --accent-foreground: 0 0% 96%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 98%;
+  --input: 240 4% 20%;
+  --ring: 158 64% 52%;
+  --chart-1: 158 64% 52%;
+  --chart-2: 32 95% 60%;
+  --chart-3: 217 91% 60%;
+  --chart-4: 244 75% 65%;
+  --chart-5: 270 70% 65%;
+
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-serif: 'Source Serif 4', Georgia, serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --radius: 0.5rem;
+
+  /* Provider accents — used for badges/borders/glows */
+  --openai: 158 64% 52%;       /* emerald */
+  --anthropic: 32 95% 60%;     /* amber */
+  --google: 217 91% 60%;       /* blue */
+  --meta: 244 75% 65%;         /* indigo */
+  --xai: 220 9% 60%;           /* slate */
+  --deepseek: 270 70% 65%;     /* violet */
+
+  --shadow-2xs: 0px 1px 0px 0px hsl(0 0% 0% / 0.4);
+  --shadow-xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.4);
+  --shadow-sm: 0px 1px 2px 0px hsl(0 0% 0% / 0.5), 0px 1px 3px -1px hsl(0 0% 0% / 0.3);
+  --shadow: 0px 2px 4px 0px hsl(0 0% 0% / 0.4), 0px 1px 2px -1px hsl(0 0% 0% / 0.3);
+  --shadow-md: 0px 4px 8px 0px hsl(0 0% 0% / 0.4), 0px 2px 4px -1px hsl(0 0% 0% / 0.3);
+  --shadow-lg: 0px 8px 16px 0px hsl(0 0% 0% / 0.4), 0px 4px 6px -1px hsl(0 0% 0% / 0.3);
+  --shadow-xl: 0px 16px 32px 0px hsl(0 0% 0% / 0.5);
+  --shadow-2xl: 0px 32px 64px 0px hsl(0 0% 0% / 0.5);
+
+  --sidebar-primary-border: hsl(var(--sidebar-primary));
+  --sidebar-accent-border: hsl(var(--sidebar-accent));
+  --primary-border: hsl(var(--primary));
+  --secondary-border: hsl(var(--secondary));
+  --muted-border: hsl(var(--muted));
+  --accent-border: hsl(var(--accent));
+  --destructive-border: hsl(var(--destructive));
+}
+
+/* LIGHT MODE */
+:root.light {
+  --button-outline: rgba(0, 0, 0, 0.08);
+  --badge-outline: rgba(0, 0, 0, 0.06);
+  --opaque-button-border-intensity: -8;
+  --elevate-1: rgba(0, 0, 0, 0.04);
+  --elevate-2: rgba(0, 0, 0, 0.08);
+
+  --background: 30 20% 98%;
+  --foreground: 240 8% 10%;
+  --border: 240 6% 90%;
+  --card: 0 0% 100%;
+  --card-foreground: 240 8% 10%;
+  --card-border: 240 6% 92%;
+  --sidebar: 30 15% 96%;
+  --sidebar-foreground: 240 8% 10%;
+  --sidebar-border: 240 6% 90%;
+  --sidebar-primary: 158 64% 38%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 240 6% 90%;
+  --sidebar-accent-foreground: 240 8% 10%;
+  --sidebar-ring: 158 64% 38%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 240 8% 10%;
+  --popover-border: 240 6% 90%;
+  --primary: 158 64% 38%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 240 6% 92%;
+  --secondary-foreground: 240 8% 10%;
+  --muted: 240 6% 94%;
+  --muted-foreground: 240 6% 40%;
+  --accent: 240 6% 92%;
+  --accent-foreground: 240 8% 10%;
+  --destructive: 0 84% 42%;
+  --destructive-foreground: 0 0% 100%;
+  --input: 240 6% 80%;
+  --ring: 158 64% 38%;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    font-feature-settings: 'cv11', 'ss01', 'ss03';
+  }
+
+  ::selection {
+    background: hsl(var(--primary) / 0.3);
+    color: hsl(var(--foreground));
+  }
+}
+
+@layer utilities {
+  .font-mono {
+    font-family: var(--font-mono);
+    font-feature-settings: 'zero', 'ss02';
+  }
+
+  /* Subtle grid background for hero/canvas */
+  .grid-bg {
+    background-image:
+      linear-gradient(hsl(var(--border) / 0.5) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--border) / 0.5) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  .grid-bg-dense {
+    background-image:
+      linear-gradient(hsl(var(--border) / 0.6) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--border) / 0.6) 1px, transparent 1px);
+    background-size: 16px 16px;
+  }
+
+  /* Streaming cursor */
+  .stream-cursor::after {
+    content: '';
+    display: inline-block;
+    width: 0.5ch;
+    height: 1em;
+    margin-left: 2px;
+    vertical-align: text-bottom;
+    background: currentColor;
+    animation: blink 1s steps(2, start) infinite;
+  }
+
+  @keyframes blink {
+    to { opacity: 0; }
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 0 0 hsl(var(--accent-color, var(--primary)) / 0.4); }
+    50% { box-shadow: 0 0 0 6px hsl(var(--accent-color, var(--primary)) / 0); }
+  }
+
+  .node-active {
+    animation: pulse-glow 1.4s ease-out infinite;
+  }
+
+  /* Provider color helpers */
+  .provider-openai { --accent-color: var(--openai); }
+  .provider-anthropic { --accent-color: var(--anthropic); }
+  .provider-google { --accent-color: var(--google); }
+  .provider-meta { --accent-color: var(--meta); }
+  .provider-xai { --accent-color: var(--xai); }
+  .provider-deepseek { --accent-color: var(--deepseek); }
+
+  .provider-dot {
+    background: hsl(var(--accent-color, var(--primary)));
+    box-shadow: 0 0 8px hsl(var(--accent-color, var(--primary)) / 0.5);
+  }
+
+  .provider-text {
+    color: hsl(var(--accent-color, var(--primary)));
+  }
+
+  .provider-border {
+    border-color: hsl(var(--accent-color, var(--primary)) / 0.4);
+  }
+
+  .provider-bg {
+    background: hsl(var(--accent-color, var(--primary)) / 0.12);
+  }
+
+  .provider-glow {
+    box-shadow: 0 0 24px hsl(var(--accent-color, var(--primary)) / 0.25),
+                inset 0 0 0 1px hsl(var(--accent-color, var(--primary)) / 0.4);
+  }
+
+  /* Hover/elevate utilities — preserved from template */
+  .hover-elevate:not(.no-default-hover-elevate),
+  .active-elevate:not(.no-default-active-elevate),
+  .hover-elevate-2:not(.no-default-hover-elevate),
+  .active-elevate-2:not(.no-default-active-elevate) {
+    position: relative;
+    z-index: 0;
+  }
+
+  .hover-elevate:not(.no-default-hover-elevate)::after,
+  .active-elevate:not(.no-default-active-elevate)::after,
+  .hover-elevate-2:not(.no-default-hover-elevate)::after,
+  .active-elevate-2:not(.no-default-active-elevate)::after {
+    content: '';
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    z-index: 999;
+  }
+
+  .hover-elevate:hover:not(.no-default-hover-elevate)::after,
+  .active-elevate:active:not(.no-default-active-elevate)::after {
+    background-color: var(--elevate-1);
+  }
+
+  .hover-elevate-2:hover:not(.no-default-hover-elevate)::after,
+  .active-elevate-2:active:not(.no-default-active-elevate)::after {
+    background-color: var(--elevate-2);
+  }
+
+  .border.hover-elevate::after,
+  .border.active-elevate::after,
+  .border.hover-elevate-2::after,
+  .border.active-elevate-2::after {
+    inset: -1px;
+  }
+
+  /* Scrollbar */
+  .nice-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+  .nice-scroll::-webkit-scrollbar-track { background: transparent; }
+  .nice-scroll::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 4px; }
+  .nice-scroll::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.4); }
+
+  /* Hide scrollbar */
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  input[type='search']::-webkit-search-cancel-button { @apply hidden; }
+}
