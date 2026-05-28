@@ -12,7 +12,9 @@ import {
   MoreHorizontal,
   Share2,
   Check,
+  FileText,
 } from "lucide-react";
+import { useDocuments } from "@/lib/documents-store";
 import { ModelPicker } from "./ModelPicker";
 import { ModelBadge } from "./ModelBadge";
 import { modelById, providerClass, MODELS } from "@/lib/models";
@@ -43,6 +45,7 @@ function uid(prefix = "id"): string {
 
 export function ChatMode() {
   const chat = useChatStore();
+  const docs = useDocuments();
   const activeThread = chat.threads[chat.activeThreadId];
   const messages = activeThread?.messages ?? [];
   const surfaceId = `chat-${chat.activeThreadId}`;
@@ -53,6 +56,15 @@ export function ChatMode() {
   const [sharing, setSharing] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  function pushToDoc(content: string) {
+    const title = content.slice(0, 60).trim() + (content.length > 60 ? "…" : "");
+    const html = content
+      .split(/\n\n+/)
+      .map((p) => `<p>${p.replace(/\n/g, "<br>")}</p>`)
+      .join("");
+    docs.createDocument("general", title || "From Chat", html);
+  }
 
   async function handleShare() {
     if (sharing || !messages.length) return;
@@ -271,7 +283,6 @@ export function ChatMode() {
               onBranch={() => branchAt(m.id)}
               onRetryModel={(mid) => retryWithModel(m.id, mid)}
               onCancel={(streamingMsgId) => {
-                // Find the in-flight run with matching message
                 for (const run of surfaceQueue.activeRuns) {
                   if (run.onMeta?.messageId === streamingMsgId) {
                     store.cancel(run.id);
@@ -281,6 +292,7 @@ export function ChatMode() {
               onSelectVariant={(idx) => chat.setActiveVariant(chat.activeThreadId, m.id, idx)}
               branchThreadIds={m.branchThreadIds ?? []}
               onJumpBranch={(tid) => chat.setActiveThread(tid)}
+              onPushToDoc={pushToDoc}
             />
           ))}
         </div>
@@ -372,6 +384,7 @@ function MessageRow({
   onSelectVariant,
   branchThreadIds,
   onJumpBranch,
+  onPushToDoc,
 }: {
   message: ChatMsg;
   onBranch: () => void;
@@ -380,6 +393,7 @@ function MessageRow({
   onSelectVariant: (idx: number) => void;
   branchThreadIds: string[];
   onJumpBranch: (tid: string) => void;
+  onPushToDoc: (content: string) => void;
 }) {
   if (message.role === "user") {
     return (
@@ -476,6 +490,15 @@ function MessageRow({
               data-testid={`button-cancel-msg-${message.id}`}
             >
               <X className="w-2.5 h-2.5" /> Stop
+            </button>
+          )}
+          {!view.streaming && view.content && (
+            <button
+              onClick={() => onPushToDoc(view.content)}
+              className="inline-flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider text-muted-foreground hover:text-primary rounded-md px-1.5 py-0.5 hover-elevate"
+              title="Push to document"
+            >
+              <FileText className="w-2.5 h-2.5" /> Push to Doc
             </button>
           )}
           <button

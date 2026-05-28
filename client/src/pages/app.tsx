@@ -6,11 +6,13 @@ import { ChatMode } from "@/components/ChatMode";
 import { CompareMode } from "@/components/CompareMode";
 import { OrchestrateMode } from "@/components/OrchestrateMode";
 import { WorkspaceMode } from "@/components/WorkspaceMode";
+import { DocumentsMode } from "@/components/DocumentsMode";
 import { WorkspaceRail } from "@/components/WorkspaceRail";
 import { ActivityDock, useDockState } from "@/components/ActivityDock";
 import { WorkspaceProvider } from "@/lib/workspace-store";
 import { RunsProvider } from "@/lib/runs-store";
 import { ChatStoreProvider } from "@/lib/chat-store";
+import { DocumentsProvider } from "@/lib/documents-store";
 import { Info, Zap } from "lucide-react";
 
 export default function AppPage() {
@@ -20,7 +22,9 @@ export default function AppPage() {
     <RunsProvider>
       <ChatStoreProvider>
         <WorkspaceProvider>
-          <AppShellWithDock mode={mode} setMode={setMode} />
+          <DocumentsProvider>
+            <AppShellWithDock mode={mode} setMode={setMode} />
+          </DocumentsProvider>
         </WorkspaceProvider>
       </ChatStoreProvider>
     </RunsProvider>
@@ -57,6 +61,7 @@ function AppShellWithDock({ mode, setMode }: { mode: AppMode; setMode: (m: AppMo
         {mode === "compare" && <CompareMode />}
         {mode === "orchestrate" && <OrchestrateMode />}
         {mode === "workspace" && <WorkspaceMode />}
+        {mode === "documents" && <DocumentsMode />}
       </AppShell>
       <ActivityDock />
       <OnboardingTour open={tourOpen} onClose={() => setTourOpen(false)} />

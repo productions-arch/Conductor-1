@@ -17,6 +17,7 @@ import {
   Key,
   Menu,
   ChevronsUpDown,
+  FileText,
 } from "lucide-react";
 import { Logo } from "./Logo";
 import { EXAMPLE_CONVERSATIONS, SAVED_WORKFLOWS } from "@/lib/mock-data";
@@ -33,7 +34,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export type AppMode = "chat" | "compare" | "orchestrate" | "workspace";
+export type AppMode = "chat" | "compare" | "orchestrate" | "workspace" | "documents";
 
 interface AppShellProps {
   children: ReactNode;
@@ -178,6 +179,7 @@ export function AppShell({ children, mode, onModeChange, rightRail, dockReserved
                 { icon: <Layers className="w-4 h-4" />, m: "compare" as const, label: "Compare" },
                 { icon: <GitBranch className="w-4 h-4" />, m: "orchestrate" as const, label: "Orchestrate" },
                 { icon: <LayoutGrid className="w-4 h-4" />, m: "workspace" as const, label: "Workspace" },
+                { icon: <FileText className="w-4 h-4" />, m: "documents" as const, label: "Docs" },
               ].map(({ icon, m, label }) => (
                 <button
                   key={m}
@@ -267,6 +269,7 @@ export function AppShell({ children, mode, onModeChange, rightRail, dockReserved
             <ModeTab active={mode === "compare"} onClick={() => onModeChange("compare")} icon={<Layers className="w-3 h-3" />} label="Compare" testId="tab-compare" />
             <ModeTab active={mode === "orchestrate"} onClick={() => onModeChange("orchestrate")} icon={<GitBranch className="w-3 h-3" />} label="Orchestrate" testId="tab-orchestrate" />
             <ModeTab active={mode === "workspace"} onClick={() => onModeChange("workspace")} icon={<LayoutGrid className="w-3 h-3" />} label="Workspace" testId="tab-workspace" />
+            <ModeTab active={mode === "documents"} onClick={() => onModeChange("documents")} icon={<FileText className="w-3 h-3" />} label="Docs" testId="tab-documents" />
           </div>
           {/* Mobile: show current mode label */}
           {isMobile && (
@@ -357,7 +360,7 @@ export function AppShell({ children, mode, onModeChange, rightRail, dockReserved
           <BottomNavItem icon={<MessageSquare className="w-5 h-5" />} label="Chat" active={mode === "chat"} onClick={() => onModeChange("chat")} testId="mobile-tab-chat" />
           <BottomNavItem icon={<Layers className="w-5 h-5" />} label="Compare" active={mode === "compare"} onClick={() => onModeChange("compare")} testId="mobile-tab-compare" />
           <BottomNavItem icon={<GitBranch className="w-5 h-5" />} label="Orchestrate" active={mode === "orchestrate"} onClick={() => onModeChange("orchestrate")} testId="mobile-tab-orchestrate" />
-          <BottomNavItem icon={<LayoutGrid className="w-5 h-5" />} label="Workspace" active={mode === "workspace"} onClick={() => onModeChange("workspace")} testId="mobile-tab-workspace" />
+          <BottomNavItem icon={<FileText className="w-5 h-5" />} label="Docs" active={mode === "documents"} onClick={() => onModeChange("documents")} testId="mobile-tab-documents" />
           <BottomNavItem icon={<Menu className="w-5 h-5" />} label="Menu" active={sidebarOpen} onClick={() => setSidebarOpen(!sidebarOpen)} testId="mobile-tab-menu" />
         </nav>
       )}

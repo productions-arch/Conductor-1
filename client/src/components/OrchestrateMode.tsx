@@ -11,7 +11,9 @@ import {
   RotateCcw,
   ChevronDown,
   GripVertical,
+  FileText,
 } from "lucide-react";
+import { useDocuments } from "@/lib/documents-store";
 import { ModelPicker } from "./ModelPicker";
 import { modelById, providerClass, MODELS } from "@/lib/models";
 import { WORKFLOW_OUTPUTS } from "@/lib/mock-responses";
@@ -401,7 +403,17 @@ export function OrchestrateMode() {
     });
   };
 
+  const docs = useDocuments();
   const finalNode = nodes[nodes.length - 1];
+
+  function pushNodeToDoc(node: WorkflowNode) {
+    const title = `${node.label}: ${node.output.slice(0, 50).trim()}${node.output.length > 50 ? "…" : ""}`;
+    const html = node.output
+      .split(/\n\n+/)
+      .map((p) => `<p>${p.replace(/\n/g, "<br>")}</p>`)
+      .join("");
+    docs.createDocument("general", title, html);
+  }
 
   return (
     <div className="h-full flex flex-col">
@@ -477,6 +489,7 @@ export function OrchestrateMode() {
                   onCancel={() => cancelNode(node.id)}
                   onRetry={(newModelId) => retryNode(node.id, newModelId)}
                   canRetry={hasRun && !running && (node.status === "done" || node.status === "stopped")}
+                  onPushToDoc={() => pushNodeToDoc(node)}
                 />
                 {idx < nodes.length - 1 && <ArrowConnector />}
               </div>
@@ -505,6 +518,14 @@ export function OrchestrateMode() {
                     <span className="text-[10px] font-mono uppercase tracking-wider text-primary">
                       Final output
                     </span>
+                    <div className="flex-1" />
+                    <button
+                      onClick={() => pushNodeToDoc(finalNode)}
+                      className="inline-flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider text-muted-foreground hover:text-primary rounded-md px-1.5 py-0.5 hover-elevate"
+                      title="Push final output to document"
+                    >
+                      <FileText className="w-2.5 h-2.5" /> Push to Doc
+                    </button>
                   </div>
                   <div className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/95">
                     {finalNode.output}
@@ -555,6 +576,7 @@ function WorkflowNodeCard({
   onCancel,
   onRetry,
   canRetry,
+  onPushToDoc,
 }: {
   node: WorkflowNode;
   index: number;
@@ -565,6 +587,7 @@ function WorkflowNodeCard({
   onCancel: () => void;
   onRetry: (newModelId?: string) => void;
   canRetry: boolean;
+  onPushToDoc: () => void;
 }) {
   const model = modelById(node.modelId);
   const status = node.status;
@@ -654,9 +677,22 @@ function WorkflowNodeCard({
       <div className="px-4 py-3">
         <div className="text-[11px] text-muted-foreground italic mb-2">{node.prompt}</div>
         {node.output ? (
-          <div className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/95 max-h-64 overflow-y-auto nice-scroll">
-            <span className={status === "running" ? "stream-cursor" : ""}>{node.output}</span>
-          </div>
+          <>
+            <div className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/95 max-h-64 overflow-y-auto nice-scroll">
+              <span className={status === "running" ? "stream-cursor" : ""}>{node.output}</span>
+            </div>
+            {status === "done" && (
+              <div className="mt-2 flex justify-end">
+                <button
+                  onClick={onPushToDoc}
+                  className="inline-flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider text-muted-foreground hover:text-primary rounded-md px-1.5 py-0.5 hover-elevate"
+                  title="Push to document"
+                >
+                  <FileText className="w-2.5 h-2.5" /> Push to Doc
+                </button>
+              </div>
+            )}
+          </>
         ) : (
           <div className="text-xs font-mono uppercase tracking-wider text-muted-foreground/60">
             {status === "idle" ? "Waiting" : status === "stopped" ? "Stopped" : "Generating…"}
