@@ -115,6 +115,17 @@ function Inspector({ mode }: { mode: AppMode }) {
         "Submit while a pane is streaming — it queues; or branch any reply into a new pane",
       ],
     },
+    documents: {
+      title: "Documents",
+      blurb:
+        "A persistent workspace for your AI-generated content. Organize writing into projects, edit it freely, and push any response here directly from Chat or Orchestrate.",
+      tips: [
+        "Create projects to group related docs",
+        "Hover any AI response and click Push to Doc",
+        "Edit directly in the rich text editor",
+        "Bold, italic, headings, and lists supported",
+      ],
+    },
   }[mode];
 
   return (
