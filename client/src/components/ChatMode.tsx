@@ -395,6 +395,22 @@ function MessageRow({
   onJumpBranch: (tid: string) => void;
   onPushToDoc: (content: string) => void;
 }) {
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [selectedText, setSelectedText] = useState("");
+
+  function handleMouseUp() {
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed || !contentRef.current) {
+      setSelectedText("");
+      return;
+    }
+    if (contentRef.current.contains(sel.anchorNode)) {
+      setSelectedText(sel.toString().trim());
+    } else {
+      setSelectedText("");
+    }
+  }
+
   if (message.role === "user") {
     return (
       <div className="flex justify-end animate-fade-in group">
@@ -494,11 +510,16 @@ function MessageRow({
           )}
           {!view.streaming && view.content && (
             <button
-              onClick={() => onPushToDoc(view.content)}
-              className="inline-flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider text-muted-foreground hover:text-primary rounded-md px-1.5 py-0.5 hover-elevate"
-              title="Push to document"
+              onClick={() => {
+                onPushToDoc(selectedText || view.content);
+                setSelectedText("");
+                window.getSelection()?.removeAllRanges();
+              }}
+              className={`inline-flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider rounded-md px-1.5 py-0.5 hover-elevate ${selectedText ? "text-primary" : "text-muted-foreground hover:text-primary"}`}
+              title={selectedText ? "Push selected text to document" : "Push full response to document"}
             >
-              <FileText className="w-2.5 h-2.5" /> Push to Doc
+              <FileText className="w-2.5 h-2.5" />
+              {selectedText ? "Push selection" : "Push to Doc"}
             </button>
           )}
           <button
@@ -539,7 +560,11 @@ function MessageRow({
           </DropdownMenu>
         </div>
       </div>
-      <div className="prose prose-sm prose-invert max-w-none text-foreground/95 whitespace-pre-wrap leading-relaxed">
+      <div
+        ref={contentRef}
+        onMouseUp={handleMouseUp}
+        className="prose prose-sm prose-invert max-w-none text-foreground/95 whitespace-pre-wrap leading-relaxed select-text"
+      >
         <span className={view.streaming ? "stream-cursor" : ""}>{view.content}</span>
       </div>
     </div>
