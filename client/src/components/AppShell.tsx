@@ -280,7 +280,7 @@ export function AppShell({ children, mode, onModeChange, rightRail, dockReserved
 
           {mode_ === "mock" && (
             <span
-              className="inline-flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-amber-500 border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 rounded-md"
+              className={`inline-flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-md border ${theme === "dark" ? "text-amber-500 border-amber-500/30 bg-amber-500/10" : "text-amber-700 border-amber-500/40 bg-amber-50"}`}
               data-testid="badge-demo-mode"
               title="Responses are mocked. Sign in and add an OpenRouter key to use real models."
             >
