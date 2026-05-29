@@ -18,6 +18,8 @@ import {
   Menu,
   ChevronsUpDown,
   FileText,
+  PanelRightClose,
+  PanelRightOpen,
 } from "lucide-react";
 import { Logo } from "./Logo";
 import { EXAMPLE_CONVERSATIONS, SAVED_WORKFLOWS } from "@/lib/mock-data";
@@ -50,6 +52,7 @@ export function AppShell({ children, mode, onModeChange, rightRail, dockReserved
   const [sidebarState, setSidebarState] = useState<"open" | "icons" | "closed">("open");
   const [isMobile, setIsMobile] = useState(false);
   const [headerCollapsed, setHeaderCollapsed] = useState(false);
+  const [rightRailCollapsed, setRightRailCollapsed] = useState(false);
 
   const sidebarOpen = sidebarState !== "closed";
   const setSidebarOpen = (open: boolean) => setSidebarState(open ? "open" : "closed");
@@ -347,8 +350,31 @@ export function AppShell({ children, mode, onModeChange, rightRail, dockReserved
         <div className="flex-1 flex min-h-0">
           <div className="flex-1 min-w-0 overflow-hidden">{children}</div>
           {rightRail && (
-            <aside className="w-72 border-l border-border bg-sidebar/40 hidden lg:flex flex-col overflow-hidden">
-              {rightRail}
+            <aside className={`hidden lg:flex flex-col border-l border-border bg-sidebar/40 overflow-hidden transition-[width] duration-200 ${rightRailCollapsed ? "w-9" : "w-72"}`}>
+              {rightRailCollapsed ? (
+                <div className="flex flex-col items-center pt-3">
+                  <button
+                    onClick={() => setRightRailCollapsed(false)}
+                    className="p-1.5 rounded-md hover-elevate text-muted-foreground"
+                    title="Expand panel"
+                  >
+                    <PanelRightOpen className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col h-full overflow-hidden">
+                  <div className="flex justify-end px-2 pt-2 shrink-0">
+                    <button
+                      onClick={() => setRightRailCollapsed(true)}
+                      className="p-1.5 rounded-md hover-elevate text-muted-foreground/50 hover:text-muted-foreground"
+                      title="Collapse panel"
+                    >
+                      <PanelRightClose className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  <div className="flex-1 overflow-hidden">{rightRail}</div>
+                </div>
+              )}
             </aside>
           )}
         </div>
